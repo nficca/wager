@@ -7,6 +7,8 @@
 
 use std::num::NonZeroU32;
 
+use bon::bon;
+
 /// A struct representing an Odd.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Odd {
@@ -21,9 +23,14 @@ pub enum OddError {
     InvalidOdd,
 }
 
+#[bon]
 impl Odd {
-    /// Create a new Odd.
-    pub fn new<T: TryInto<NonZeroU32>>(numerator: T, denominator: T) -> Result<Self, OddError> {
+    /// Create a new Odd from a fractional value.
+    #[builder]
+    pub fn fractional<T: TryInto<NonZeroU32>>(
+        numerator: T,
+        denominator: T,
+    ) -> Result<Self, OddError> {
         let numerator = numerator.try_into().map_err(|_| OddError::InvalidOdd)?;
         let denominator = denominator.try_into().map_err(|_| OddError::InvalidOdd)?;
         Ok(Self {
@@ -44,8 +51,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn new() -> Result<(), OddError> {
-        let odd = Odd::new(1, 2)?;
+    fn fractional() -> Result<(), OddError> {
+        let odd = Odd::fractional().numerator(1).denominator(2).call()?;
         assert_eq!(odd.numerator.get(), 1);
         assert_eq!(odd.denominator.get(), 2);
 
@@ -54,7 +61,7 @@ mod tests {
 
     #[test]
     fn to_decimal() -> Result<(), OddError> {
-        let odd = Odd::new(1, 2)?;
+        let odd = Odd::fractional().numerator(1).denominator(2).call()?;
         assert_eq!(odd.to_decimal(), 1.5);
 
         Ok(())
