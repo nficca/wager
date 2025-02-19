@@ -5,7 +5,7 @@
 
 //! A library for dealing with Odds.
 
-use std::num::NonZeroU32;
+use std::{cmp::Ordering, num::NonZeroU32};
 
 use fraction_simplification::simplify;
 
@@ -19,6 +19,85 @@ const RATIONAL_APPROXIMATION_MAX_DENOMINATOR: i32 = 100;
 pub enum OddError {
     /// The odd is invalid.
     InvalidOdd,
+}
+
+/// An odd.
+#[derive(Debug, Clone, Copy)]
+pub enum Odd {
+    /// A fractional odd.
+    Fractional(Fractional),
+    /// A decimal odd.
+    Decimal(Decimal),
+    /// A moneyline odd.
+    Moneyline(Moneyline),
+}
+
+impl PartialEq for Odd {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Fractional(a), Self::Fractional(b)) => Decimal::try_from(*a)
+                .and_then(|a| Decimal::try_from(*b).map(|b| a == b))
+                .unwrap_or_else(|_| a == b),
+            (Self::Fractional(a), Self::Decimal(b)) => {
+                Decimal::try_from(*a).map(|a| a == *b).unwrap_or(false)
+            }
+            (Self::Fractional(a), Self::Moneyline(b)) => Decimal::try_from(*a)
+                .and_then(|a| Decimal::try_from(*b).map(|b| a == b))
+                .unwrap_or(false),
+            (Self::Decimal(a), Self::Fractional(b)) => {
+                Decimal::try_from(*b).map(|b| *a == b).unwrap_or(false)
+            }
+            (Self::Decimal(a), Self::Decimal(b)) => a == b,
+            (Self::Decimal(a), Self::Moneyline(b)) => {
+                Decimal::try_from(*b).map(|b| *a == b).unwrap_or(false)
+            }
+            (Self::Moneyline(a), Self::Fractional(b)) => Decimal::try_from(*a)
+                .and_then(|a| Decimal::try_from(*b).map(|b| a == b))
+                .unwrap_or(false),
+            (Self::Moneyline(a), Self::Decimal(b)) => {
+                Decimal::try_from(*a).map(|a| a == *b).unwrap_or(false)
+            }
+            (Self::Moneyline(a), Self::Moneyline(b)) => a == b,
+        }
+    }
+}
+
+impl Eq for Odd {}
+
+impl PartialOrd for Odd {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match (self, other) {
+            (Self::Fractional(a), Self::Fractional(b)) => Decimal::try_from(*a)
+                .and_then(|a| Decimal::try_from(*b).map(|b| a.partial_cmp(&b)))
+                .unwrap_or(None),
+            (Self::Fractional(a), Self::Decimal(b)) => Decimal::try_from(*a)
+                .map(|a| a.partial_cmp(&*b))
+                .unwrap_or(None),
+            (Self::Fractional(a), Self::Moneyline(b)) => Decimal::try_from(*a)
+                .and_then(|a| Decimal::try_from(*b).map(|b| a.partial_cmp(&b)))
+                .unwrap_or(None),
+            (Self::Decimal(a), Self::Fractional(b)) => Decimal::try_from(*b)
+                .map(|b| a.partial_cmp(&b))
+                .unwrap_or(None),
+            (Self::Decimal(a), Self::Decimal(b)) => a.partial_cmp(&b),
+            (Self::Decimal(a), Self::Moneyline(b)) => Decimal::try_from(*b)
+                .map(|b| a.partial_cmp(&b))
+                .unwrap_or(None),
+            (Self::Moneyline(a), Self::Fractional(b)) => Decimal::try_from(*a)
+                .and_then(|a| Decimal::try_from(*b).map(|b| a.partial_cmp(&b)))
+                .unwrap_or(None),
+            (Self::Moneyline(a), Self::Decimal(b)) => Decimal::try_from(*a)
+                .map(|a| a.partial_cmp(&b))
+                .unwrap_or(None),
+            (Self::Moneyline(a), Self::Moneyline(b)) => a.partial_cmp(&b),
+        }
+    }
+}
+
+impl Ord for Odd {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap_or(Ordering::Less)
+    }
 }
 
 /// A fractional odd.
@@ -197,5 +276,33 @@ mod tests {
     fn moneyline_to_decimal(value: Moneyline, expected: Decimal) {
         assert_eq!(Decimal::try_from(value).unwrap(), expected);
         assert_eq!(TryInto::<Decimal>::try_into(value).unwrap(), expected);
+    }
+
+    #[test]
+    fn eq() {
+        assert_eq!(
+            Odd::Fractional(Fractional::new(1, 2).unwrap()),
+            Odd::Decimal(Decimal::new(1.5).unwrap())
+        );
+    }
+
+    #[test]
+    fn ord() {
+        let mut odds = vec![
+            Odd::Fractional(Fractional::new(8, 1).unwrap()),
+            Odd::Decimal(Decimal::new(1.5).unwrap()),
+            Odd::Moneyline(Moneyline::new(-625).unwrap()),
+        ];
+
+        odds.sort();
+
+        assert_eq!(
+            odds,
+            vec![
+                Odd::Moneyline(Moneyline::new(-625).unwrap()),
+                Odd::Decimal(Decimal::new(1.5).unwrap()),
+                Odd::Fractional(Fractional::new(8, 1).unwrap()),
+            ]
+        );
     }
 }
