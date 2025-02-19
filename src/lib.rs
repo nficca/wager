@@ -36,9 +36,7 @@ pub struct Moneyline(i64);
 impl Fractional {
     /// Create a new fractional odd.
     pub fn new(numerator: u32, denominator: u32) -> Result<Self, OddError> {
-        println!("numerator: {}, denominator: {}", numerator, denominator);
         let (numerator, denominator) = simplify(numerator, denominator);
-        println!("numerator: {}, denominator: {}", numerator, denominator);
         let numerator = numerator.try_into().map_err(|_| OddError::InvalidOdd)?;
         let denominator = denominator.try_into().map_err(|_| OddError::InvalidOdd)?;
 
