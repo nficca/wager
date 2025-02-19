@@ -64,6 +64,15 @@ impl Odd {
         })
     }
 
+    /// Create a new Odd from a moneyline value.
+    pub fn moneyline(value: i64) -> Result<Self, OddError> {
+        if value > 0 {
+            Self::fractional(value.abs() as u32, 100)
+        } else {
+            Self::fractional(100, value.abs() as u32)
+        }
+    }
+
     /// Return the fractional representation of the Odd.
     pub fn as_fractional(&self) -> (u32, u32) {
         (self.numerator.get(), self.denominator.get())
@@ -73,6 +82,17 @@ impl Odd {
     pub fn as_decimal(&self) -> f64 {
         let ratio = self.numerator.get() as f64 / self.denominator.get() as f64;
         ratio + 1f64
+    }
+
+    /// Return the moneyline representation of the Odd.
+    pub fn as_moneyline(&self) -> i64 {
+        let result = if self.numerator.get() >= self.denominator.get() {
+            (self.numerator.get() as f64) / (self.denominator.get() as f64) * 100.0
+        } else {
+            -100.0 * (self.denominator.get() as f64) / (self.numerator.get() as f64)
+        };
+
+        result.round() as i64
     }
 }
 
@@ -106,6 +126,16 @@ mod tests {
         let odd = Odd::decimal(value)?;
         assert_eq!(odd.numerator.get(), expected.0);
         assert_eq!(odd.denominator.get(), expected.1);
+
+        Ok(())
+    }
+
+    #[test_case(1, 2, -200)]
+    #[test_case(7, 9, -129)]
+    #[test_case(46, 23, 200)]
+    fn moneyline(numerator: u32, denominator: u32, expected: i64) -> Result<(), OddError> {
+        let odd = Odd::fractional(numerator, denominator)?;
+        assert_eq!(odd.as_moneyline(), expected);
 
         Ok(())
     }
