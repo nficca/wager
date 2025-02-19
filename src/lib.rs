@@ -7,8 +7,6 @@
 
 use std::num::NonZeroU32;
 
-use bon::bon;
-
 mod rational_approximation;
 
 const RATIONAL_APPROXIMATION_MAX_DENOMINATOR: i32 = 100;
@@ -27,10 +25,8 @@ pub enum OddError {
     InvalidOdd,
 }
 
-#[bon]
 impl Odd {
     /// Create a new Odd from a fractional value.
-    #[builder]
     pub fn fractional<T: TryInto<NonZeroU32>>(
         numerator: T,
         denominator: T,
@@ -65,13 +61,21 @@ impl Odd {
     }
 }
 
+impl TryFrom<f64> for Odd {
+    type Error = OddError;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
+        Self::decimal(value)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn fractional() -> Result<(), OddError> {
-        let odd = Odd::fractional().numerator(1).denominator(2).call()?;
+        let odd = Odd::fractional(1, 2)?;
         assert_eq!(odd.numerator.get(), 1);
         assert_eq!(odd.denominator.get(), 2);
 
@@ -88,8 +92,17 @@ mod tests {
     }
 
     #[test]
+    fn try_from_f64() -> Result<(), OddError> {
+        let odd = Odd::try_from(1.7777777778)?;
+        assert_eq!(odd.numerator.get(), 7);
+        assert_eq!(odd.denominator.get(), 9);
+
+        Ok(())
+    }
+
+    #[test]
     fn to_decimal() -> Result<(), OddError> {
-        let odd = Odd::fractional().numerator(1).denominator(2).call()?;
+        let odd = Odd::fractional(1, 2)?;
         assert_eq!(odd.to_decimal(), 1.5);
 
         Ok(())
