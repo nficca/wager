@@ -54,8 +54,9 @@ impl Odd {
             denominator,
         })
     }
-    /// Convert the Odd to a decimal.
-    pub fn to_decimal(&self) -> f64 {
+
+    /// Return decimal representation of the Odd.
+    pub fn as_decimal(&self) -> f64 {
         let ratio = self.numerator.get() as f64 / self.denominator.get() as f64;
         ratio + 1f64
     }
@@ -72,38 +73,43 @@ impl TryFrom<f64> for Odd {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test_case::test_case;
 
-    #[test]
-    fn fractional() -> Result<(), OddError> {
-        let odd = Odd::fractional(1, 2)?;
-        assert_eq!(odd.numerator.get(), 1);
-        assert_eq!(odd.denominator.get(), 2);
-
-        Ok(())
-    }
-
-    #[test]
-    fn decimal() -> Result<(), OddError> {
-        let odd = Odd::decimal(1.5)?;
-        assert_eq!(odd.numerator.get(), 1);
-        assert_eq!(odd.denominator.get(), 2);
+    #[test_case(1, 2, (1, 2))]
+    #[test_case(7, 9, (7, 9))]
+    fn fractional(numerator: u32, denominator: u32, expected: (u32, u32)) -> Result<(), OddError> {
+        let odd = Odd::fractional(numerator, denominator)?;
+        assert_eq!(odd.numerator.get(), expected.0);
+        assert_eq!(odd.denominator.get(), expected.1);
 
         Ok(())
     }
 
-    #[test]
-    fn try_from_f64() -> Result<(), OddError> {
-        let odd = Odd::try_from(1.7777777778)?;
-        assert_eq!(odd.numerator.get(), 7);
-        assert_eq!(odd.denominator.get(), 9);
+    #[test_case(1.5, (1, 2))]
+    #[test_case(1.7777777777777777, (7, 9))]
+    fn decimal(value: f64, expected: (u32, u32)) -> Result<(), OddError> {
+        let odd = Odd::decimal(value)?;
+        assert_eq!(odd.numerator.get(), expected.0);
+        assert_eq!(odd.denominator.get(), expected.1);
 
         Ok(())
     }
 
-    #[test]
-    fn to_decimal() -> Result<(), OddError> {
-        let odd = Odd::fractional(1, 2)?;
-        assert_eq!(odd.to_decimal(), 1.5);
+    #[test_case(1.5, (1, 2))]
+    #[test_case(1.7777777777777777, (7, 9))]
+    fn try_from_f64(value: f64, expected: (u32, u32)) -> Result<(), OddError> {
+        let odd = Odd::try_from(value)?;
+        assert_eq!(odd.numerator.get(), expected.0);
+        assert_eq!(odd.denominator.get(), expected.1);
+
+        Ok(())
+    }
+
+    #[test_case(1, 2, 1.5)]
+    #[test_case(7, 9, 1.7777777777777777)]
+    fn as_decimal(numerator: u32, denominator: u32, expected: f64) -> Result<(), OddError> {
+        let odd = Odd::fractional(numerator, denominator)?;
+        assert_eq!(odd.as_decimal(), expected);
 
         Ok(())
     }
