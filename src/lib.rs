@@ -11,6 +11,8 @@ use bon::bon;
 
 mod rational_approximation;
 
+const RATIONAL_APPROXIMATION_MAX_DENOMINATOR: i32 = 100;
+
 /// A struct representing an Odd.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Odd {
@@ -41,6 +43,21 @@ impl Odd {
         })
     }
 
+    /// Create a new Odd from a decimal value.
+    pub fn decimal(value: f64) -> Result<Self, OddError> {
+        let (numerator, denominator) = rational_approximation::rational_approximation(
+            value - 1f64,
+            RATIONAL_APPROXIMATION_MAX_DENOMINATOR,
+        );
+
+        let numerator = NonZeroU32::new(numerator as u32).ok_or(OddError::InvalidOdd)?;
+        let denominator = NonZeroU32::new(denominator as u32).ok_or(OddError::InvalidOdd)?;
+
+        Ok(Self {
+            numerator,
+            denominator,
+        })
+    }
     /// Convert the Odd to a decimal.
     pub fn to_decimal(&self) -> f64 {
         let ratio = self.numerator.get() as f64 / self.denominator.get() as f64;
@@ -55,6 +72,15 @@ mod tests {
     #[test]
     fn fractional() -> Result<(), OddError> {
         let odd = Odd::fractional().numerator(1).denominator(2).call()?;
+        assert_eq!(odd.numerator.get(), 1);
+        assert_eq!(odd.denominator.get(), 2);
+
+        Ok(())
+    }
+
+    #[test]
+    fn decimal() -> Result<(), OddError> {
+        let odd = Odd::decimal(1.5)?;
         assert_eq!(odd.numerator.get(), 1);
         assert_eq!(odd.denominator.get(), 2);
 
