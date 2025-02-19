@@ -64,6 +64,11 @@ impl Odd {
         })
     }
 
+    /// Return the fractional representation of the Odd.
+    pub fn as_fractional(&self) -> (u32, u32) {
+        (self.numerator.get(), self.denominator.get())
+    }
+
     /// Return decimal representation of the Odd.
     pub fn as_decimal(&self) -> f64 {
         let ratio = self.numerator.get() as f64 / self.denominator.get() as f64;
@@ -111,6 +116,20 @@ mod tests {
         let odd = Odd::try_from(value)?;
         assert_eq!(odd.numerator.get(), expected.0);
         assert_eq!(odd.denominator.get(), expected.1);
+
+        Ok(())
+    }
+
+    #[test_case(1, 2, (1, 2))]
+    #[test_case(7, 9, (7, 9))]
+    #[test_case(46, 23, (2, 1))]
+    fn as_fractional(
+        numerator: u32,
+        denominator: u32,
+        expected: (u32, u32),
+    ) -> Result<(), OddError> {
+        let odd = Odd::fractional(numerator, denominator)?;
+        assert_eq!(odd.as_fractional(), expected);
 
         Ok(())
     }
