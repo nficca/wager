@@ -7,6 +7,9 @@
 
 use std::num::NonZeroU32;
 
+use fraction_simplification::simplify;
+
+mod fraction_simplification;
 mod rational_approximation;
 
 const RATIONAL_APPROXIMATION_MAX_DENOMINATOR: i32 = 100;
@@ -33,6 +36,12 @@ impl Odd {
     ) -> Result<Self, OddError> {
         let numerator = numerator.try_into().map_err(|_| OddError::InvalidOdd)?;
         let denominator = denominator.try_into().map_err(|_| OddError::InvalidOdd)?;
+        let (numerator, denominator) =
+            simplify(numerator, denominator).map_err(|_| OddError::InvalidOdd)?;
+
+        let numerator = NonZeroU32::new(numerator).ok_or(OddError::InvalidOdd)?;
+        let denominator = NonZeroU32::new(denominator).ok_or(OddError::InvalidOdd)?;
+
         Ok(Self {
             numerator,
             denominator,
@@ -77,6 +86,7 @@ mod tests {
 
     #[test_case(1, 2, (1, 2))]
     #[test_case(7, 9, (7, 9))]
+    #[test_case(46, 23, (2, 1))]
     fn fractional(numerator: u32, denominator: u32, expected: (u32, u32)) -> Result<(), OddError> {
         let odd = Odd::fractional(numerator, denominator)?;
         assert_eq!(odd.numerator.get(), expected.0);
