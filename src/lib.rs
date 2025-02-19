@@ -9,6 +9,8 @@ use std::num::NonZeroU32;
 
 use bon::bon;
 
+mod rational_approximation;
+
 /// A struct representing an Odd.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Odd {
