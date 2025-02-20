@@ -7,6 +7,7 @@
 
 use std::num::NonZeroU32;
 
+use derive_more::Display;
 use fraction_simplification::simplify;
 
 mod fraction_simplification;
@@ -22,7 +23,7 @@ pub enum OddError {
 }
 
 /// An odd.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Display)]
 pub enum Odd {
     /// A fractional odd.
     Fractional(Fractional),
@@ -52,15 +53,18 @@ impl Odd {
 }
 
 /// A fractional odd.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Display)]
+#[display("{_0}/{_1}")]
 pub struct Fractional(NonZeroU32, NonZeroU32);
 
 /// A decimal odd.
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Display)]
+#[display("{_0}")]
 pub struct Decimal(f64);
 
 /// A moneyline odd.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Display)]
+#[display("{}{}", if _0 > &0i64 { "+" } else { "-" }, _0.abs())]
 pub struct Moneyline(i64);
 
 impl Fractional {
