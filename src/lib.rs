@@ -22,7 +22,7 @@ pub enum OddError {
 }
 
 /// An odd.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Odd {
     /// A fractional odd.
     Fractional(Fractional),
@@ -30,6 +30,25 @@ pub enum Odd {
     Decimal(Decimal),
     /// A moneyline odd.
     Moneyline(Moneyline),
+}
+
+impl Odd {
+    /// Parse an odd from a string.
+    pub fn parse(input: &str) -> Result<Self, OddError> {
+        let moneyline = Moneyline::parse(input);
+        let decimal = Decimal::parse(input);
+        let fractional = Fractional::parse(input);
+
+        if let Ok(moneyline) = moneyline {
+            Ok(Self::Moneyline(moneyline))
+        } else if let Ok(decimal) = decimal {
+            Ok(Self::Decimal(decimal))
+        } else if let Ok(fractional) = fractional {
+            Ok(Self::Fractional(fractional))
+        } else {
+            Err(OddError::InvalidOdd)
+        }
+    }
 }
 
 /// A fractional odd.
@@ -52,6 +71,25 @@ impl Fractional {
         let denominator = denominator.try_into().map_err(|_| OddError::InvalidOdd)?;
 
         Ok(Self(numerator, denominator))
+    }
+
+    /// Parse a fractional odd from a string.
+    pub fn parse(input: &str) -> Result<Self, OddError> {
+        let mut parts = input.split('/');
+        let numerator = parts
+            .next()
+            .ok_or(OddError::InvalidOdd)?
+            .trim()
+            .parse()
+            .map_err(|_| OddError::InvalidOdd)?;
+        let denominator = parts
+            .next()
+            .ok_or(OddError::InvalidOdd)?
+            .trim()
+            .parse()
+            .map_err(|_| OddError::InvalidOdd)?;
+
+        Self::new(numerator, denominator)
     }
 }
 
@@ -93,6 +131,13 @@ impl Decimal {
 
         Ok(Self(value))
     }
+
+    /// Parse a decimal odd from a string.
+    pub fn parse(input: &str) -> Result<Self, OddError> {
+        let value = input.trim().parse().map_err(|_| OddError::InvalidOdd)?;
+
+        Self::new(value)
+    }
 }
 
 impl TryFrom<Fractional> for Decimal {
@@ -123,6 +168,13 @@ impl Moneyline {
         }
 
         Ok(Self(value))
+    }
+
+    /// Parse a moneyline odd from a string.
+    pub fn parse(input: &str) -> Result<Self, OddError> {
+        let value = input.parse().map_err(|_| OddError::InvalidOdd)?;
+
+        Self::new(value)
     }
 }
 
@@ -209,5 +261,15 @@ mod tests {
     fn moneyline_to_decimal(value: Moneyline, expected: Decimal) {
         assert_eq!(Decimal::try_from(value).unwrap(), expected);
         assert_eq!(TryInto::<Decimal>::try_into(value).unwrap(), expected);
+    }
+
+    #[test_case("1/2", Odd::Fractional(Fractional::new(1, 2).unwrap()))]
+    #[test_case("2852 /  124", Odd::Fractional(Fractional::new(23, 1).unwrap()))]
+    #[test_case("1.5", Odd::Decimal(Decimal::new(1.5).unwrap()))]
+    #[test_case("1.7777777777777777", Odd::Decimal(Decimal::new(1.7777777777777777).unwrap()))]
+    #[test_case("-200", Odd::Moneyline(Moneyline::new(-200).unwrap()))]
+    #[test_case("+1200", Odd::Moneyline(Moneyline::new(1200).unwrap()))]
+    fn parse_test(input: &str, expected: Odd) {
+        assert_eq!(Odd::parse(input).unwrap(), expected);
     }
 }
