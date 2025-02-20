@@ -23,7 +23,7 @@ pub fn rational_approximation(value: f64, max_denominator: i32) -> (i32, i32) {
     let mut reciprocal_residual = value;
     let mut continued_fraction_term = value.floor() as i32;
     let mut prev_convergent = (1, 0);
-    let mut convergent = (continued_fraction_term as i32, 1);
+    let mut convergent = (continued_fraction_term, 1);
 
     let mut n = 0;
 
@@ -48,11 +48,8 @@ pub fn rational_approximation(value: f64, max_denominator: i32) -> (i32, i32) {
             break;
         }
 
-        let next_convergent = append_continued_fraction_term(
-            convergent,
-            prev_convergent,
-            continued_fraction_term as i32,
-        );
+        let next_convergent =
+            append_continued_fraction_term(convergent, prev_convergent, continued_fraction_term);
         prev_convergent = convergent;
         convergent = next_convergent;
     }
@@ -62,7 +59,7 @@ pub fn rational_approximation(value: f64, max_denominator: i32) -> (i32, i32) {
 
     if n >= lower_bound {
         if n > continued_fraction_term {
-            n = continued_fraction_term as i32;
+            n = continued_fraction_term;
         }
 
         let semiconvergent = append_continued_fraction_term(convergent, prev_convergent, n);

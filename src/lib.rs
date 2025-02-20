@@ -68,7 +68,7 @@ impl TryFrom<Decimal> for Fractional {
             return Err(OddError::InvalidOdd);
         }
 
-        Self::new(numerator.abs() as u32, denominator.abs() as u32)
+        Self::new(numerator.unsigned_abs(), denominator.unsigned_abs())
     }
 }
 
@@ -79,7 +79,7 @@ impl TryFrom<Moneyline> for Fractional {
         if value.0 > 0 {
             Fractional::new(value.0 as u32, 100)
         } else {
-            Fractional::new(100, value.0.abs() as u32)
+            Fractional::new(100, value.0.unsigned_abs() as u32)
         }
     }
 }
@@ -158,6 +158,7 @@ impl TryFrom<Decimal> for Moneyline {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
     use test_case::test_case;
