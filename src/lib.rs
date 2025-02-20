@@ -60,7 +60,7 @@ impl TryFrom<Decimal> for Fractional {
 
     fn try_from(value: Decimal) -> Result<Self, Self::Error> {
         let (numerator, denominator) = rational_approximation::rational_approximation(
-            value.0 - 1f64,
+            value.0 - 1.0,
             RATIONAL_APPROXIMATION_MAX_DENOMINATOR,
         );
 
@@ -87,7 +87,7 @@ impl TryFrom<Moneyline> for Fractional {
 impl Decimal {
     /// Create a new decimal odd.
     pub fn new(value: f64) -> Result<Self, OddError> {
-        if value <= 0.0 {
+        if value < 1.0 {
             return Err(OddError::InvalidOdd);
         }
 
