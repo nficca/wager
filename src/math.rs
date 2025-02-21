@@ -1,4 +1,8 @@
-pub fn simplify(numerator: u32, denominator: u32) -> (u32, u32) {
+mod rational_approximation;
+
+pub use rational_approximation::rational_approximation;
+
+pub fn simplify_fraction(numerator: u32, denominator: u32) -> (u32, u32) {
     let gcd = gcd(numerator, denominator);
     let numerator = numerator / gcd;
     let denominator = denominator / gcd;
@@ -22,7 +26,7 @@ mod tests {
     #[test_case(10, 20, (1, 2))]
     #[test_case(46, 23, (2, 1))]
     fn simplify_test(numerator: u32, denominator: u32, expected: (u32, u32)) {
-        let result = simplify(numerator, denominator);
+        let result = simplify_fraction(numerator, denominator);
         assert_eq!(result, expected);
     }
 }

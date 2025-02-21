@@ -17,8 +17,13 @@
 
 const DEFAULT_MAX_TERMS: i32 = 47;
 const DEFAULT_CONVERGENCE_TOLERANCE: f64 = 1e-9;
+const DEFAULT_MAX_DENOMINATOR: i32 = 100;
 
-pub fn rational_approximation(value: f64, max_denominator: i32) -> (i32, i32) {
+pub fn rational_approximation(value: f64) -> (i32, i32) {
+    approximate_rational(value, DEFAULT_MAX_DENOMINATOR)
+}
+
+fn approximate_rational(value: f64, max_denominator: i32) -> (i32, i32) {
     if max_denominator <= 0 {
         return (0, 0);
     } else if value > f64::MAX - 0.5 {
@@ -121,6 +126,6 @@ mod tests {
     #[test_case(0.01123595506, (1, 89))]
     #[test_case(0.5280898876, (47, 89))]
     fn test_rational_approximation(value: f64, expected: (i32, i32)) {
-        assert_eq!(rational_approximation(value, 100), expected);
+        assert_eq!(rational_approximation(value), expected);
     }
 }

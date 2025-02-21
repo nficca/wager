@@ -8,12 +8,8 @@
 use std::num::NonZeroU32;
 
 use derive_more::Display;
-use fraction_simplification::simplify;
 
-mod fraction_simplification;
-mod rational_approximation;
-
-const RATIONAL_APPROXIMATION_MAX_DENOMINATOR: i32 = 100;
+mod math;
 
 /// An error that can occur when creating an Odd.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -70,7 +66,7 @@ pub struct Moneyline(i64);
 impl Fractional {
     /// Create a new fractional odd.
     pub fn new(numerator: u32, denominator: u32) -> Result<Self, OddError> {
-        let (numerator, denominator) = simplify(numerator, denominator);
+        let (numerator, denominator) = math::simplify_fraction(numerator, denominator);
         let numerator = numerator.try_into().map_err(|_| OddError::InvalidOdd)?;
         let denominator = denominator.try_into().map_err(|_| OddError::InvalidOdd)?;
 
@@ -101,10 +97,7 @@ impl TryFrom<Decimal> for Fractional {
     type Error = OddError;
 
     fn try_from(value: Decimal) -> Result<Self, Self::Error> {
-        let (numerator, denominator) = rational_approximation::rational_approximation(
-            value.0 - 1.0,
-            RATIONAL_APPROXIMATION_MAX_DENOMINATOR,
-        );
+        let (numerator, denominator) = math::rational_approximation(value.0 - 1.0);
 
         if numerator <= 0 || denominator <= 0 {
             return Err(OddError::InvalidOdd);
