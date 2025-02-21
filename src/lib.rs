@@ -273,7 +273,17 @@ mod tests {
     #[test_case("1.7777777777777777", Odd::Decimal(Decimal::new(1.7777777777777777).unwrap()))]
     #[test_case("-200", Odd::Moneyline(Moneyline::new(-200).unwrap()))]
     #[test_case("+1200", Odd::Moneyline(Moneyline::new(1200).unwrap()))]
-    fn parse_test(input: &str, expected: Odd) {
+    fn parse(input: &str, expected: Odd) {
         assert_eq!(Odd::parse(input).unwrap(), expected);
+    }
+
+    #[test_case(Odd::Fractional(Fractional::new(1, 2).unwrap()), "1/2")]
+    #[test_case(Odd::Fractional(Fractional::new(2852, 124).unwrap()), "23/1")]
+    #[test_case(Odd::Decimal(Decimal::new(1.5).unwrap()), "1.5")]
+    #[test_case(Odd::Decimal(Decimal::new(1.7777777777777777).unwrap()), "1.7777777777777777")]
+    #[test_case(Odd::Moneyline(Moneyline::new(-200).unwrap()), "-200")]
+    #[test_case(Odd::Moneyline(Moneyline::new(1200).unwrap()), "+1200")]
+    fn display(value: Odd, expected: &str) {
+        assert_eq!(format!("{}", value), expected);
     }
 }
