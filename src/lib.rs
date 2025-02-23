@@ -61,6 +61,23 @@
 //! let payout = moneyline.payout(100.0);
 //! assert_eq!(payout, 150.0);
 //! ```
+//!
+//! ## Compare
+//!
+//! ```rust
+//! use wager::odd::{AnyOdd, Decimal, Moneyline};
+//!
+//! // With same type
+//! let a = Decimal::new(1.5).unwrap();
+//! let b = Decimal::new(1.6).unwrap();
+//! assert!(a < b);
+//!
+//! // With different types
+//! // Need to wrap in an AnyOdd first
+//! let a = AnyOdd::Decimal(Decimal::new(1.4).unwrap());
+//! let b = AnyOdd::Moneyline(Moneyline::new(-200).unwrap());
+//! assert!(a < b);
+//! ```
 
 mod math;
 pub mod odd;

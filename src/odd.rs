@@ -10,6 +10,7 @@ mod fractional;
 mod moneyline;
 
 pub use decimal::Decimal;
+use derive_more::Display;
 pub use fractional::Fractional;
 pub use moneyline::Moneyline;
 
@@ -21,7 +22,7 @@ pub enum OddError {
 }
 
 /// Any representation of an odd. This is useful for handling odds generically.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Display)]
 pub enum AnyOdd {
     /// A fractional odd.
     Fractional(Fractional),
@@ -41,6 +42,70 @@ impl FromStr for AnyOdd {
                 .map(Into::into)
                 .or_else(|_| input.parse::<Fractional>().map(Into::into))
         })
+    }
+}
+
+impl PartialEq for AnyOdd {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (AnyOdd::Decimal(a), AnyOdd::Decimal(b)) => a == b,
+            (AnyOdd::Decimal(a), AnyOdd::Fractional(b)) => {
+                Decimal::try_from(*b).map(|b| *a == b).unwrap_or(false)
+            }
+            (AnyOdd::Decimal(a), AnyOdd::Moneyline(b)) => {
+                Decimal::try_from(*b).map(|b| *a == b).unwrap_or(false)
+            }
+            (AnyOdd::Fractional(a), AnyOdd::Fractional(b)) => a == b,
+            (AnyOdd::Fractional(a), AnyOdd::Decimal(b)) => {
+                Decimal::try_from(*a).map(|a| a == *b).unwrap_or(false)
+            }
+            (AnyOdd::Fractional(a), AnyOdd::Moneyline(b)) => {
+                Fractional::try_from(*b).map(|b| *a == b).unwrap_or(false)
+            }
+            (AnyOdd::Moneyline(a), AnyOdd::Moneyline(b)) => a == b,
+            (AnyOdd::Moneyline(a), AnyOdd::Decimal(b)) => {
+                Decimal::try_from(*a).map(|a| a == *b).unwrap_or(false)
+            }
+            (AnyOdd::Moneyline(a), AnyOdd::Fractional(b)) => {
+                Fractional::try_from(*a).map(|a| a == *b).unwrap_or(false)
+            }
+        }
+    }
+}
+
+impl Eq for AnyOdd {}
+
+impl PartialOrd for AnyOdd {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for AnyOdd {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match (self, other) {
+            (AnyOdd::Decimal(a), AnyOdd::Decimal(b)) => a.cmp(b),
+            (AnyOdd::Decimal(a), AnyOdd::Fractional(b)) => Decimal::try_from(*b)
+                .map(|b| a.cmp(&b))
+                .unwrap_or(std::cmp::Ordering::Greater),
+            (AnyOdd::Decimal(a), AnyOdd::Moneyline(b)) => Decimal::try_from(*b)
+                .map(|b| a.cmp(&b))
+                .unwrap_or(std::cmp::Ordering::Greater),
+            (AnyOdd::Fractional(a), AnyOdd::Fractional(b)) => a.cmp(b),
+            (AnyOdd::Fractional(a), AnyOdd::Decimal(b)) => Decimal::try_from(*a)
+                .map(|a| a.cmp(b))
+                .unwrap_or(std::cmp::Ordering::Less),
+            (AnyOdd::Fractional(a), AnyOdd::Moneyline(b)) => Fractional::try_from(*b)
+                .map(|b| a.cmp(&b))
+                .unwrap_or(std::cmp::Ordering::Greater),
+            (AnyOdd::Moneyline(a), AnyOdd::Moneyline(b)) => a.cmp(b),
+            (AnyOdd::Moneyline(a), AnyOdd::Decimal(b)) => Decimal::try_from(*a)
+                .map(|a| a.cmp(b))
+                .unwrap_or(std::cmp::Ordering::Less),
+            (AnyOdd::Moneyline(a), AnyOdd::Fractional(b)) => Fractional::try_from(*a)
+                .map(|a| a.cmp(b))
+                .unwrap_or(std::cmp::Ordering::Less),
+        }
     }
 }
 
@@ -134,5 +199,25 @@ mod tests {
     #[test_case(Moneyline::new(1200).unwrap(), "+1200")]
     fn display(value: impl Odd, expected: &str) {
         assert_eq!(format!("{}", value), expected);
+    }
+
+    #[test_case(&["2/1", "1/2"], &["1/2", "2/1"])]
+    #[test_case(&["1/2", "2/1"], &["1/2", "2/1"])]
+    #[test_case(&["-200", "+100"], &["-200", "+100"])]
+    #[test_case(&["+100", "-200"], &["-200", "+100"])]
+    #[test_case(&["1.2345", "1.5"], &["1.2345", "1.5"])]
+    #[test_case(&["1.5", "1.2345"], &["1.2345", "1.5"])]
+    #[test_case(&["1.2345", "2/1", "-800"], &["-800", "1.2345", "2/1"])]
+    fn sort(values: &[&str], expected: &[&str]) {
+        let values: Vec<AnyOdd> = values
+            .iter()
+            .map(|v| v.parse::<AnyOdd>().unwrap())
+            .collect();
+        let mut values = values.to_vec();
+        values.sort();
+
+        for (i, value) in values.iter().enumerate() {
+            assert_eq!(value.to_string().as_str(), expected[i], "index: {}", i);
+        }
     }
 }
