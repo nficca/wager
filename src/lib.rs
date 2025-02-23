@@ -5,7 +5,7 @@
 
 //! A library for dealing with Odds.
 //!
-//! Basic usage:
+//! ## Basic usage
 //!
 //! ```rust
 //! use wager::odd::{Decimal, Fractional, Moneyline};
@@ -20,7 +20,7 @@
 //! let moneyline = Moneyline::new(-200).unwrap();
 //! ```
 //!
-//! Converting between odds:
+//! ## Convert
 //!
 //! ```rust
 //! use wager::odd::{Decimal, Fractional, Moneyline};
@@ -30,7 +30,7 @@
 //! let moneyline = Moneyline::try_from(decimal).unwrap();
 //! ```
 //!
-//! Parsing odds:
+//! ## Parse
 //!
 //! ```rust
 //! // Parse odds directly if you know the format ahead of time:
@@ -46,6 +46,20 @@
 //!     AnyOdd::Decimal(decimal) => {} // Do something with decimal odd
 //!     AnyOdd::Moneyline(moneyline) => {} // Do something with moneyline odd
 //! }
+//! ```
+//!
+//! ## Calculate payout
+//!
+//! ```rust
+//! use wager::odd::{Decimal, Moneyline, Odd};
+//!
+//! let decimal = Decimal::new(1.5).unwrap();
+//! let payout = decimal.payout(100.0);
+//! assert_eq!(payout, 150.0);
+//!
+//! let moneyline = Moneyline::new(-200).unwrap();
+//! let payout = moneyline.payout(100.0);
+//! assert_eq!(payout, 150.0);
 //! ```
 
 mod math;
