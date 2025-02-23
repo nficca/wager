@@ -5,6 +5,13 @@ use derive_more::Display;
 use super::{AnyOdd, Decimal, Fractional, Odd, OddError};
 
 /// A moneyline odd.
+///
+/// When this value is positive, it indicates the net winnings for 100-unit wager.
+/// When this value is negative, it indicates the stake required for a 100-unit payout.
+///
+/// E.g.
+/// +200 means that for every 100 units staked, the bettor will profit 200 units, while
+/// -200 means that for every 200 units staked, the bettor will profit 100 units.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Display)]
 #[display("{}{}", if value > &0i64 { "+" } else { "-" }, value.abs())]
 pub struct Moneyline {
@@ -12,7 +19,20 @@ pub struct Moneyline {
 }
 
 impl Moneyline {
-    /// Create a new moneyline odd.
+    /// Create a new moneyline odd from an integer.
+    ///
+    /// This will error if the absolute value is less than 100.
+    ///
+    /// Example
+    /// ```rust
+    /// use wager::odd::Moneyline;
+    ///
+    /// let moneyline = Moneyline::new(-200).unwrap();
+    /// assert_eq!(moneyline.value(), -200);
+    ///
+    /// let moneyline = Moneyline::new(99);
+    /// assert!(moneyline.is_err());
+    /// ```
     pub fn new(value: i64) -> Result<Self, OddError> {
         if value.abs() < 100 {
             return Err(OddError::InvalidOdd);

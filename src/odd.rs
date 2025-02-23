@@ -133,7 +133,15 @@ pub trait Odd:
     + FromStr<Err = OddError>
     + 'static
 {
-    /// Get the payout for a given stake.
+    /// Get the total (including the stake) payout for a given stake.
+    ///
+    /// Example
+    /// ```rust
+    /// use wager::odd::{Fractional, Odd};
+    ///
+    /// let fractional = Fractional::new(4, 1).unwrap();
+    /// assert_eq!(fractional.payout(100.0), 500.0);
+    /// ```
     fn payout(&self, stake: f64) -> f64;
 }
 

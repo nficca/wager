@@ -7,6 +7,11 @@ use crate::math;
 use super::{AnyOdd, Decimal, Moneyline, Odd, OddError};
 
 /// A fractional odd.
+///
+/// Comprised of a numerator and a denominator. The numerator represents the number of units
+/// a bettor will profit given that the denominator represents the number of units staked.
+///
+/// E.g. 4/1 means that for every unit staked, the bettor will profit 4 units.
 #[derive(Debug, Clone, Copy, Display)]
 #[display("{numerator}/{denominator}")]
 pub struct Fractional {
@@ -15,7 +20,21 @@ pub struct Fractional {
 }
 
 impl Fractional {
-    /// Create a new fractional odd.
+    /// Create a new fractional odd from a `numerator` and `denominator`.
+    ///   - Will be simplified to its lowest terms.
+    ///   - Will error if the fraction is negative or zero.
+    ///
+    /// Example
+    /// ```rust
+    /// use wager::odd::Fractional;
+    ///
+    /// let fractional = Fractional::new(8, 2).unwrap();
+    /// assert_eq!(fractional.numerator(), 4);
+    /// assert_eq!(fractional.denominator(), 1);
+    ///
+    /// let fractional = Fractional::new(1, 0);
+    /// assert!(fractional.is_err());
+    /// ```
     pub fn new(numerator: u32, denominator: u32) -> Result<Self, OddError> {
         let (numerator, denominator) = math::simplify_fraction(numerator, denominator);
         let numerator = numerator.try_into().map_err(|_| OddError::InvalidOdd)?;
@@ -45,7 +64,6 @@ impl From<Fractional> for AnyOdd {
 }
 
 impl Odd for Fractional {
-    /// Get the payout for a given stake.
     fn payout(&self, stake: f64) -> f64 {
         stake * (1.0 + (self.numerator.get() as f64 / self.denominator.get() as f64))
     }
@@ -104,6 +122,14 @@ impl Ord for Fractional {
 impl TryFrom<Decimal> for Fractional {
     type Error = OddError;
 
+    /// Convert a decimal odd to a fractional odd.
+    ///
+    /// <div class="warning">
+    /// This conversion is not always exact.
+    /// Converting a decimal value to a fraction requires rational approximation.
+    /// This means that <b>the resulting fraction may not exactly equal the decimal value</b>,
+    /// but it should be very close.
+    /// </div>
     fn try_from(value: Decimal) -> Result<Self, Self::Error> {
         let value = value.value();
         let (numerator, denominator) = math::rational_approximation(value - 1.0);

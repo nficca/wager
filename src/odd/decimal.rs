@@ -5,6 +5,11 @@ use derive_more::Display;
 use super::{AnyOdd, Fractional, Moneyline, Odd, OddError};
 
 /// A decimal odd.
+///
+/// This is a value that represents the ratio of the payout amount, including the
+/// original stake, to the stake itself.
+///
+/// E.g. 1.5 means that for every unit staked, the bettor will profit 1.5 units.
 #[derive(Debug, Clone, Copy, Display, PartialEq)]
 #[display("{value}")]
 pub struct Decimal {
@@ -12,7 +17,21 @@ pub struct Decimal {
 }
 
 impl Decimal {
-    /// Create a new decimal odd.
+    /// Create a new decimal odd from a float.
+    ///
+    /// This will error if the value is less than 1.0 because anything less would imply
+    /// that the payout is less than the stake itself.
+    ///
+    /// Example
+    /// ```rust
+    /// use wager::odd::Decimal;
+    ///
+    /// let decimal = Decimal::new(1.5).unwrap();
+    /// assert_eq!(decimal.value(), 1.5);
+    ///
+    /// let decimal = Decimal::new(0.0);
+    /// assert!(decimal.is_err());
+    /// ```
     pub fn new(value: f64) -> Result<Self, OddError> {
         if value < 1.0 {
             return Err(OddError::InvalidOdd);

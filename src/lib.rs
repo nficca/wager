@@ -3,10 +3,14 @@
 #![deny(missing_docs)]
 #![warn(rust_2018_idioms)]
 
-//! A library for dealing with Odds.
+//! A library for the representation and manipulation of betting odds.
+//! Includes support for the following types of odds:
+//!   - [`Fractional`](`odd::Fractional`)
+//!   - [`Decimal`](`odd::Decimal`)
+//!   - [`Moneyline`](`odd::Moneyline`)
 //!
-//! ## Basic usage
-//!
+//! # Basic usage
+//! ## Create
 //! ```rust
 //! use wager::odd::{Decimal, Fractional, Moneyline};
 //!
@@ -19,17 +23,6 @@
 //! // Moneyline odds
 //! let moneyline = Moneyline::new(-200).unwrap();
 //! ```
-//!
-//! ## Convert
-//!
-//! ```rust
-//! use wager::odd::{Decimal, Fractional, Moneyline};
-//!
-//! let fractional = Fractional::new(1, 2).unwrap();
-//! let decimal = Decimal::try_from(fractional).unwrap();
-//! let moneyline = Moneyline::try_from(decimal).unwrap();
-//! ```
-//!
 //! ## Parse
 //!
 //! ```rust
@@ -47,6 +40,21 @@
 //!     AnyOdd::Moneyline(moneyline) => {} // Do something with moneyline odd
 //! }
 //! ```
+//!
+//! ## Convert
+//!
+//! ```rust
+//! use wager::odd::{Decimal, Fractional, Moneyline};
+//!
+//! let fractional = Fractional::new(1, 2).unwrap();
+//! let decimal = Decimal::try_from(fractional).unwrap();
+//! let moneyline = Moneyline::try_from(decimal).unwrap();
+//! ```
+//! <div class="warning">
+//! It's very important to note that converting between odds is not always exact.
+//! For example, converting a decimal odd to a fractional odd requires the
+//! approximation of a real number from a rational number.
+//! </div>
 //!
 //! ## Calculate payout
 //!
