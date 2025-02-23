@@ -20,12 +20,6 @@ pub enum OddError {
     InvalidOdd,
 }
 
-/// A trait for converting an odd to another type.
-pub trait OddConversion<T> {
-    /// Convert the odd to another type.
-    fn convert(&self) -> Result<T, OddError>;
-}
-
 /// Any representation of an odd. This is useful for handling odds generically.
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub enum AnyOdd {
@@ -60,9 +54,6 @@ pub trait Odd:
     + PartialOrd
     + Into<AnyOdd>
     + FromStr<Err = OddError>
-    + OddConversion<Fractional>
-    + OddConversion<Decimal>
-    + OddConversion<Moneyline>
     + 'static
 {
     /// Get the payout for a given stake.
@@ -79,48 +70,48 @@ mod tests {
     #[test_case(Fractional::new(2, 1).unwrap(), Decimal::new(3.0).unwrap())]
     #[test_case(Fractional::new(7, 9).unwrap(), Decimal::new(1.7777777777777777).unwrap())]
     fn fractional_to_decimal(value: Fractional, expected: Decimal) {
-        let result: Decimal = value.convert().unwrap();
-        assert_eq!(result, expected);
+        assert_eq!(Decimal::try_from(value).unwrap(), expected);
+        assert_eq!(TryInto::<Decimal>::try_into(value).unwrap(), expected);
     }
 
     #[test_case(Fractional::new(1, 2).unwrap(), Moneyline::new(-200).unwrap())]
     #[test_case(Fractional::new(2, 1).unwrap(), Moneyline::new(200).unwrap())]
     #[test_case(Fractional::new(7, 9).unwrap(), Moneyline::new(-129).unwrap())]
     fn fractional_to_moneyline(value: Fractional, expected: Moneyline) {
-        let result: Moneyline = value.convert().unwrap();
-        assert_eq!(result, expected);
+        assert_eq!(Moneyline::try_from(value).unwrap(), expected);
+        assert_eq!(TryInto::<Moneyline>::try_into(value).unwrap(), expected);
     }
 
     #[test_case(Decimal::new(1.5).unwrap(), Fractional::new(1, 2).unwrap())]
     #[test_case(Decimal::new(3.0).unwrap(), Fractional::new(2, 1).unwrap())]
     #[test_case(Decimal::new(1.7777777777777777).unwrap(), Fractional::new(7, 9).unwrap())]
     fn decimal_to_fractional(value: Decimal, expected: Fractional) {
-        let result: Fractional = value.convert().unwrap();
-        assert_eq!(result, expected);
+        assert_eq!(Fractional::try_from(value).unwrap(), expected);
+        assert_eq!(TryInto::<Fractional>::try_into(value).unwrap(), expected);
     }
 
     #[test_case(Decimal::new(1.5).unwrap(), Moneyline::new(-200).unwrap())]
     #[test_case(Decimal::new(3.0).unwrap(), Moneyline::new(200).unwrap())]
     #[test_case(Decimal::new(1.7777777777777777).unwrap(), Moneyline::new(-129).unwrap())]
     fn decimal_to_moneyline(value: Decimal, expected: Moneyline) {
-        let result: Moneyline = value.convert().unwrap();
-        assert_eq!(result, expected);
+        assert_eq!(Moneyline::try_from(value).unwrap(), expected);
+        assert_eq!(TryInto::<Moneyline>::try_into(value).unwrap(), expected);
     }
 
     #[test_case(Moneyline::new(-200).unwrap(), Fractional::new(1, 2).unwrap())]
     #[test_case(Moneyline::new(200).unwrap(), Fractional::new(2, 1).unwrap())]
     #[test_case(Moneyline::new(-128).unwrap(), Fractional::new(25, 32).unwrap())]
     fn moneyline_to_fractional(value: Moneyline, expected: Fractional) {
-        let result: Fractional = value.convert().unwrap();
-        assert_eq!(result, expected);
+        assert_eq!(Fractional::try_from(value).unwrap(), expected);
+        assert_eq!(TryInto::<Fractional>::try_into(value).unwrap(), expected);
     }
 
     #[test_case(Moneyline::new(-200).unwrap(), Decimal::new(1.5).unwrap())]
     #[test_case(Moneyline::new(200).unwrap(), Decimal::new(3.0).unwrap())]
     #[test_case(Moneyline::new(-129).unwrap(), Decimal::new(1.7751937984496124).unwrap())]
     fn moneyline_to_decimal(value: Moneyline, expected: Decimal) {
-        let result: Decimal = value.convert().unwrap();
-        assert_eq!(result, expected);
+        assert_eq!(Decimal::try_from(value).unwrap(), expected);
+        assert_eq!(TryInto::<Decimal>::try_into(value).unwrap(), expected);
     }
 
     #[test_case("1/2", AnyOdd::Fractional(Fractional::new(1, 2).unwrap()))]

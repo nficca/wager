@@ -4,7 +4,7 @@ use derive_more::Display;
 
 use crate::math;
 
-use super::{AnyOdd, Decimal, Moneyline, Odd, OddConversion, OddError};
+use super::{AnyOdd, Decimal, Moneyline, Odd, OddError};
 
 /// A fractional odd.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Display)]
@@ -73,30 +73,26 @@ impl FromStr for Fractional {
     }
 }
 
-impl OddConversion<Fractional> for Fractional {
-    fn convert(&self) -> Result<Fractional, OddError> {
-        Ok(*self)
+impl TryFrom<Decimal> for Fractional {
+    type Error = OddError;
+
+    fn try_from(value: Decimal) -> Result<Self, Self::Error> {
+        let value = value.value();
+        let (numerator, denominator) = math::rational_approximation(value - 1.0);
+
+        Self::new(numerator.unsigned_abs(), denominator.unsigned_abs())
     }
 }
 
-impl OddConversion<Decimal> for Fractional {
-    fn convert(&self) -> Result<Decimal, OddError> {
-        Decimal::new(1.0 + (self.numerator.get() as f64 / self.denominator.get() as f64))
-    }
-}
+impl TryFrom<Moneyline> for Fractional {
+    type Error = OddError;
 
-impl OddConversion<Moneyline> for Fractional {
-    fn convert(&self) -> Result<Moneyline, OddError> {
-        let numerator = self.numerator.get() as f64;
-        let denominator = self.denominator.get() as f64;
-
-        let result = if numerator >= denominator {
-            numerator / denominator * 100.0
+    fn try_from(value: Moneyline) -> Result<Self, Self::Error> {
+        if value.value() > 0 {
+            Self::new(value.value() as u32, 100)
         } else {
-            -100.0 * denominator / numerator
-        };
-
-        Moneyline::new(result.round() as i64)
+            Self::new(100, value.value().unsigned_abs() as u32)
+        }
     }
 }
 
