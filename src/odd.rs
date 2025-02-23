@@ -25,7 +25,12 @@ pub enum OddError {
     ParseError,
 }
 
-/// Any representation of an odd. This is useful for handling odds generically.
+/// Any representation of an odd.
+///
+/// This is useful when you need to handle one or multiple odds that may
+/// be different representations, such as:
+///   - Parsing from a string that could be a fractional, decimal, moneyline, etc.
+///   - Ordering or comparing odds of different types
 #[derive(Debug, Clone, Copy, Display)]
 pub enum AnyOdd {
     /// A fractional odd.
@@ -123,7 +128,8 @@ impl Ord for AnyOdd {
     }
 }
 
-/// An odd.
+/// The interface that all odds representations must implement.
+/// This allows for parsing, displaying, comparing, calculating payouts, etc.
 pub trait Odd:
     Debug
     + Display
