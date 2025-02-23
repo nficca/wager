@@ -1,5 +1,5 @@
 [package]
-name = "odds-rs"
+name = "wager"
 version = "0.1.0"
 edition = "2021"
 

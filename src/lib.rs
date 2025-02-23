@@ -8,7 +8,7 @@
 //! Basic usage:
 //!
 //! ```rust
-//! use odds_rs::odd::{Decimal, Fractional, Moneyline};
+//! use wager::odd::{Decimal, Fractional, Moneyline};
 //!
 //! // Fractional odds
 //! let fractional = Fractional::new(1, 2).unwrap();
@@ -23,7 +23,7 @@
 //! Converting between odds:
 //!
 //! ```rust
-//! use odds_rs::odd::{Decimal, Fractional, Moneyline, OddConversion};
+//! use wager::odd::{Decimal, Fractional, Moneyline, OddConversion};
 //!
 //! let fractional = Fractional::new(1, 2).unwrap();
 //! let decimal: Decimal = fractional.convert().unwrap();
@@ -34,7 +34,7 @@
 //!
 //! ```rust
 //! // Parse odds directly if you know the format ahead of time:
-//! use odds_rs::odd::{Decimal, Fractional, Moneyline, Odd, AnyOdd};
+//! use wager::odd::{Decimal, Fractional, Moneyline, Odd, AnyOdd};
 //!
 //! let fractional = Fractional::parse("1/2").unwrap();
 //! let decimal = Decimal::parse("1.5").unwrap();
