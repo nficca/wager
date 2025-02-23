@@ -38,6 +38,15 @@ impl Odd for Moneyline {
 
         Self::new(value)
     }
+
+    /// Get the payout for a given stake.
+    fn payout(&self, stake: f64) -> f64 {
+        if self.value > 0 {
+            stake * (1.0 + self.value as f64 / 100.0)
+        } else {
+            stake * (1.0 + 100.0 / self.value.abs() as f64)
+        }
+    }
 }
 
 impl OddConversion<Fractional> for Moneyline {
@@ -84,5 +93,13 @@ mod tests {
     fn invalid(value: i64) {
         let moneyline = Moneyline::new(value);
         assert!(moneyline.is_err());
+    }
+
+    #[test_case(100, 100.0, 200.0)]
+    #[test_case(200, 25.0, 75.0)]
+    #[test_case(-128, 100.0, 178.125)]
+    fn payout(value: i64, stake: f64, expected: f64) {
+        let moneyline = Moneyline::new(value).unwrap();
+        assert_eq!(moneyline.payout(stake), expected);
     }
 }

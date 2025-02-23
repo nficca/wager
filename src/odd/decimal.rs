@@ -40,6 +40,11 @@ impl Odd for Decimal {
 
         Self::new(value)
     }
+
+    /// Get the payout for a given stake.
+    fn payout(&self, stake: f64) -> f64 {
+        stake * self.value
+    }
 }
 
 impl OddConversion<Decimal> for Decimal {
@@ -91,5 +96,13 @@ mod tests {
     fn invalid(value: f64) {
         let decimal = Decimal::new(value);
         assert!(decimal.is_err());
+    }
+
+    #[test_case(1.5, 100.0, 150.0)]
+    #[test_case(3.0, 25.0, 75.0)]
+    #[test_case(1.7777777777777777, 100.0, 177.77777777777777)]
+    fn payout(value: f64, stake: f64, expected: f64) {
+        let decimal = Decimal::new(value).unwrap();
+        assert_eq!(decimal.payout(stake), expected);
     }
 }

@@ -60,6 +60,9 @@ pub trait Odd:
 {
     /// Parse an odd from a string.
     fn parse(input: &str) -> Result<Self, OddError>;
+
+    /// Get the payout for a given stake.
+    fn payout(&self, stake: f64) -> f64;
 }
 
 #[cfg(test)]

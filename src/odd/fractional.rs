@@ -63,6 +63,11 @@ impl Odd for Fractional {
 
         Self::new(numerator, denominator)
     }
+
+    /// Get the payout for a given stake.
+    fn payout(&self, stake: f64) -> f64 {
+        stake * (1.0 + (self.numerator.get() as f64 / self.denominator.get() as f64))
+    }
 }
 
 impl OddConversion<Fractional> for Fractional {
@@ -112,5 +117,13 @@ mod tests {
     fn invalid(value: (u32, u32)) {
         let fractional = Fractional::new(value.0, value.1);
         assert!(fractional.is_err());
+    }
+
+    #[test_case((1, 2), 100.0, 150.0)]
+    #[test_case((2, 1), 25.0, 75.0)]
+    #[test_case((7, 9), 100.0, 177.77777777777777)]
+    fn payout(value: (u32, u32), stake: f64, expected: f64) {
+        let fractional = Fractional::new(value.0, value.1).unwrap();
+        assert_eq!(fractional.payout(stake), expected);
     }
 }
