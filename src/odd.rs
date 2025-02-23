@@ -32,6 +32,16 @@ pub enum AnyOdd {
     Moneyline(Moneyline),
 }
 
+impl Odd for AnyOdd {
+    fn payout(&self, stake: f64) -> f64 {
+        match self {
+            AnyOdd::Decimal(decimal) => decimal.payout(stake),
+            AnyOdd::Fractional(fractional) => fractional.payout(stake),
+            AnyOdd::Moneyline(moneyline) => moneyline.payout(stake),
+        }
+    }
+}
+
 impl FromStr for AnyOdd {
     type Err = OddError;
 
