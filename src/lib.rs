@@ -23,11 +23,11 @@
 //! Converting between odds:
 //!
 //! ```rust
-//! use wager::odd::{Decimal, Fractional, Moneyline, OddConversion};
+//! use wager::odd::{Decimal, Fractional, Moneyline};
 //!
 //! let fractional = Fractional::new(1, 2).unwrap();
-//! let decimal: Decimal = fractional.convert().unwrap();
-//! let moneyline: Moneyline = fractional.convert().unwrap();
+//! let decimal = Decimal::try_from(fractional).unwrap();
+//! let moneyline = Moneyline::try_from(decimal).unwrap();
 //! ```
 //!
 //! Parsing odds:
@@ -36,12 +36,12 @@
 //! // Parse odds directly if you know the format ahead of time:
 //! use wager::odd::{Decimal, Fractional, Moneyline, Odd, AnyOdd};
 //!
-//! let fractional = Fractional::parse("1/2").unwrap();
-//! let decimal = Decimal::parse("1.5").unwrap();
-//! let moneyline = Moneyline::parse("-200").unwrap();
+//! let fractional = "1/2".parse::<Fractional>().unwrap();
+//! let decimal = "1.5".parse::<Decimal>().unwrap();
+//! let moneyline = "-200".parse::<Moneyline>().unwrap();
 //!
 //! // Parse odds generically:
-//! match AnyOdd::parse("1/2").unwrap() {
+//! match "1/2".parse::<AnyOdd>().unwrap() {
 //!     AnyOdd::Fractional(fractional) => {} // Do something with fractional odd
 //!     AnyOdd::Decimal(decimal) => {} // Do something with decimal odd
 //!     AnyOdd::Moneyline(moneyline) => {} // Do something with moneyline odd
