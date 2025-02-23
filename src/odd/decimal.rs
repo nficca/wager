@@ -78,6 +78,7 @@ impl OddConversion<Moneyline> for Decimal {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
     use test_case::test_case;

@@ -76,6 +76,7 @@ impl OddConversion<Moneyline> for Moneyline {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
     use test_case::test_case;
