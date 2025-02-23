@@ -7,7 +7,7 @@ use crate::math;
 use super::{AnyOdd, Decimal, Moneyline, Odd, OddError};
 
 /// A fractional odd.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Display)]
+#[derive(Debug, Clone, Copy, Display)]
 #[display("{numerator}/{denominator}")]
 pub struct Fractional {
     numerator: NonZeroU32,
@@ -73,6 +73,34 @@ impl FromStr for Fractional {
     }
 }
 
+impl PartialEq for Fractional {
+    fn eq(&self, other: &Self) -> bool {
+        let lcd = math::lcm(self.denominator(), other.denominator());
+        let numerator_a = self.numerator() * (lcd / self.denominator());
+        let numerator_b = other.numerator() * (lcd / other.denominator());
+
+        numerator_a == numerator_b
+    }
+}
+
+impl Eq for Fractional {}
+
+impl PartialOrd for Fractional {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Fractional {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        let lcd = math::lcm(self.denominator(), other.denominator());
+        let numerator_a = self.numerator() * (lcd / self.denominator());
+        let numerator_b = other.numerator() * (lcd / other.denominator());
+
+        numerator_a.cmp(&numerator_b)
+    }
+}
+
 impl TryFrom<Decimal> for Fractional {
     type Error = OddError;
 
@@ -100,6 +128,7 @@ impl TryFrom<Moneyline> for Fractional {
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
+    use std::cmp::Ordering;
     use test_case::test_case;
 
     #[test_case((1, 2), (1, 2))]
@@ -117,6 +146,26 @@ mod tests {
     fn invalid(value: (u32, u32)) {
         let fractional = Fractional::new(value.0, value.1);
         assert!(fractional.is_err());
+    }
+
+    #[test_case((1, 2), (1, 2), true)]
+    #[test_case((1, 2), (2, 4), true)]
+    #[test_case((1, 2), (3, 6), true)]
+    fn eq(a: (u32, u32), b: (u32, u32), expected: bool) {
+        let a = Fractional::new(a.0, a.1).unwrap();
+        let b = Fractional::new(b.0, b.1).unwrap();
+        assert_eq!(a == b, expected);
+    }
+
+    #[test_case((1, 2), (1, 2), Ordering::Equal)]
+    #[test_case((1, 2), (2, 4), Ordering::Equal)]
+    #[test_case((1, 2), (3, 6), Ordering::Equal)]
+    #[test_case((1, 2), (2, 3), Ordering::Less)]
+    #[test_case((2, 3), (1, 2), Ordering::Greater)]
+    fn cmp(a: (u32, u32), b: (u32, u32), expected: Ordering) {
+        let a = Fractional::new(a.0, a.1).unwrap();
+        let b = Fractional::new(b.0, b.1).unwrap();
+        assert_eq!(a.cmp(&b), expected);
     }
 
     #[test_case((1, 2), 100.0, 150.0)]

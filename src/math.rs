@@ -14,12 +14,16 @@ pub fn simplify_fraction(numerator: u32, denominator: u32) -> (u32, u32) {
     (numerator, denominator)
 }
 
-fn gcd(a: u32, b: u32) -> u32 {
+pub fn gcd(a: u32, b: u32) -> u32 {
     if b == 0 {
         a
     } else {
         gcd(b, a % b)
     }
+}
+
+pub fn lcm(a: u32, b: u32) -> u32 {
+    (a * b) / gcd(a, b)
 }
 
 #[cfg(test)]

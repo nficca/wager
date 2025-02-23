@@ -5,7 +5,7 @@ use derive_more::Display;
 use super::{AnyOdd, Fractional, Moneyline, Odd, OddError};
 
 /// A decimal odd.
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Display)]
+#[derive(Debug, Clone, Copy, Display, PartialEq)]
 #[display("{value}")]
 pub struct Decimal {
     value: f64,
@@ -47,6 +47,20 @@ impl FromStr for Decimal {
         let value = input.trim().parse().map_err(|_| OddError::InvalidOdd)?;
 
         Self::new(value)
+    }
+}
+
+impl Eq for Decimal {}
+
+impl PartialOrd for Decimal {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Decimal {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.value.total_cmp(&other.value)
     }
 }
 

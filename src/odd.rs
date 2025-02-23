@@ -21,7 +21,7 @@ pub enum OddError {
 }
 
 /// Any representation of an odd. This is useful for handling odds generically.
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AnyOdd {
     /// A fractional odd.
     Fractional(Fractional),
@@ -51,7 +51,9 @@ pub trait Odd:
     + Clone
     + Copy
     + PartialEq
+    + Eq
     + PartialOrd
+    + Ord
     + Into<AnyOdd>
     + FromStr<Err = OddError>
     + 'static
