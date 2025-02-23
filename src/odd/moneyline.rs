@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use derive_more::Display;
 
 use super::{AnyOdd, Decimal, Fractional, Odd, OddConversion, OddError};
@@ -32,13 +34,6 @@ impl From<Moneyline> for AnyOdd {
 }
 
 impl Odd for Moneyline {
-    /// Parse a moneyline odd from a string.
-    fn parse(input: &str) -> Result<Self, OddError> {
-        let value = input.parse().map_err(|_| OddError::InvalidOdd)?;
-
-        Self::new(value)
-    }
-
     /// Get the payout for a given stake.
     fn payout(&self, stake: f64) -> f64 {
         if self.value > 0 {
@@ -46,6 +41,16 @@ impl Odd for Moneyline {
         } else {
             stake * (1.0 + 100.0 / self.value.abs() as f64)
         }
+    }
+}
+
+impl FromStr for Moneyline {
+    type Err = OddError;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let value = input.parse().map_err(|_| OddError::InvalidOdd)?;
+
+        Self::new(value)
     }
 }
 

@@ -1,4 +1,4 @@
-use std::num::NonZeroU32;
+use std::{num::NonZeroU32, str::FromStr};
 
 use derive_more::Display;
 
@@ -45,8 +45,16 @@ impl From<Fractional> for AnyOdd {
 }
 
 impl Odd for Fractional {
-    /// Parse a fractional odd from a string.
-    fn parse(input: &str) -> Result<Self, OddError> {
+    /// Get the payout for a given stake.
+    fn payout(&self, stake: f64) -> f64 {
+        stake * (1.0 + (self.numerator.get() as f64 / self.denominator.get() as f64))
+    }
+}
+
+impl FromStr for Fractional {
+    type Err = OddError;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
         let mut parts = input.split('/');
         let numerator = parts
             .next()
@@ -62,11 +70,6 @@ impl Odd for Fractional {
             .map_err(|_| OddError::InvalidOdd)?;
 
         Self::new(numerator, denominator)
-    }
-
-    /// Get the payout for a given stake.
-    fn payout(&self, stake: f64) -> f64 {
-        stake * (1.0 + (self.numerator.get() as f64 / self.denominator.get() as f64))
     }
 }
 

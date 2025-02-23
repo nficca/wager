@@ -1,6 +1,9 @@
 //! Odds functionality and primitives.
 
-use std::fmt::{Debug, Display};
+use std::{
+    fmt::{Debug, Display},
+    str::FromStr,
+};
 
 mod decimal;
 mod fractional;
@@ -34,13 +37,16 @@ pub enum AnyOdd {
     Moneyline(Moneyline),
 }
 
-impl AnyOdd {
-    /// Parse any odd from a string.
-    pub fn parse(input: &str) -> Result<Self, OddError> {
-        Moneyline::parse(input)
-            .map(Into::into)
-            .or_else(|_| Decimal::parse(input).map(Into::into))
-            .or_else(|_| Fractional::parse(input).map(Into::into))
+impl FromStr for AnyOdd {
+    type Err = OddError;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        input.parse::<Moneyline>().map(Into::into).or_else(|_| {
+            input
+                .parse::<Decimal>()
+                .map(Into::into)
+                .or_else(|_| input.parse::<Fractional>().map(Into::into))
+        })
     }
 }
 
@@ -53,14 +59,12 @@ pub trait Odd:
     + PartialEq
     + PartialOrd
     + Into<AnyOdd>
+    + FromStr<Err = OddError>
     + OddConversion<Fractional>
     + OddConversion<Decimal>
     + OddConversion<Moneyline>
     + 'static
 {
-    /// Parse an odd from a string.
-    fn parse(input: &str) -> Result<Self, OddError>;
-
     /// Get the payout for a given stake.
     fn payout(&self, stake: f64) -> f64;
 }
@@ -126,7 +130,7 @@ mod tests {
     #[test_case("-200", AnyOdd::Moneyline(Moneyline::new(-200).unwrap()))]
     #[test_case("+1200", AnyOdd::Moneyline(Moneyline::new(1200).unwrap()))]
     fn parse(input: &str, expected: AnyOdd) {
-        assert_eq!(AnyOdd::parse(input).unwrap(), expected);
+        assert_eq!(input.parse::<AnyOdd>().unwrap(), expected);
     }
 
     #[test_case(Fractional::new(1, 2).unwrap(), "1/2")]

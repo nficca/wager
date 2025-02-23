@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use derive_more::Display;
 
 use crate::math;
@@ -34,16 +36,19 @@ impl From<Decimal> for AnyOdd {
 }
 
 impl Odd for Decimal {
-    /// Parse a decimal odd from a string.
-    fn parse(input: &str) -> Result<Self, OddError> {
-        let value = input.trim().parse().map_err(|_| OddError::InvalidOdd)?;
-
-        Self::new(value)
-    }
-
     /// Get the payout for a given stake.
     fn payout(&self, stake: f64) -> f64 {
         stake * self.value
+    }
+}
+
+impl FromStr for Decimal {
+    type Err = OddError;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let value = input.trim().parse().map_err(|_| OddError::InvalidOdd)?;
+
+        Self::new(value)
     }
 }
 
