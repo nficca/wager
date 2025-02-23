@@ -35,7 +35,7 @@ impl Moneyline {
     /// ```
     pub fn new(value: i64) -> Result<Self, OddError> {
         if value.abs() < 100 {
-            return Err(OddError::InvalidOdd);
+            return Err(OddError::Invalid);
         }
 
         Ok(Self { value })
@@ -68,7 +68,7 @@ impl FromStr for Moneyline {
     type Err = OddError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let value = input.parse().map_err(|_| OddError::InvalidOdd)?;
+        let value = input.parse().map_err(|_| OddError::ParseError)?;
 
         Self::new(value)
     }

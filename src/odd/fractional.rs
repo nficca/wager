@@ -37,8 +37,8 @@ impl Fractional {
     /// ```
     pub fn new(numerator: u32, denominator: u32) -> Result<Self, OddError> {
         let (numerator, denominator) = math::simplify_fraction(numerator, denominator);
-        let numerator = numerator.try_into().map_err(|_| OddError::InvalidOdd)?;
-        let denominator = denominator.try_into().map_err(|_| OddError::InvalidOdd)?;
+        let numerator = numerator.try_into().map_err(|_| OddError::Invalid)?;
+        let denominator = denominator.try_into().map_err(|_| OddError::Invalid)?;
 
         Ok(Self {
             numerator,
@@ -76,16 +76,16 @@ impl FromStr for Fractional {
         let mut parts = input.split('/');
         let numerator = parts
             .next()
-            .ok_or(OddError::InvalidOdd)?
+            .ok_or(OddError::ParseError)?
             .trim()
             .parse()
-            .map_err(|_| OddError::InvalidOdd)?;
+            .map_err(|_| OddError::ParseError)?;
         let denominator = parts
             .next()
-            .ok_or(OddError::InvalidOdd)?
+            .ok_or(OddError::ParseError)?
             .trim()
             .parse()
-            .map_err(|_| OddError::InvalidOdd)?;
+            .map_err(|_| OddError::ParseError)?;
 
         Self::new(numerator, denominator)
     }

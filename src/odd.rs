@@ -15,10 +15,14 @@ pub use fractional::Fractional;
 pub use moneyline::Moneyline;
 
 /// An error that can occur when creating an Odd.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Display, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum OddError {
-    /// The odd is invalid.
-    InvalidOdd,
+    /// The odd is invalid. Usually this is because it does not make sense,
+    /// e.g. a fractional odd with a negative numerator or denominator.
+    Invalid,
+
+    /// An error that occurred when parsing an odd.
+    ParseError,
 }
 
 /// Any representation of an odd. This is useful for handling odds generically.

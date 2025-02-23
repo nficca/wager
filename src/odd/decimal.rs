@@ -34,7 +34,7 @@ impl Decimal {
     /// ```
     pub fn new(value: f64) -> Result<Self, OddError> {
         if value < 1.0 {
-            return Err(OddError::InvalidOdd);
+            return Err(OddError::Invalid);
         }
 
         Ok(Self { value })
@@ -63,7 +63,7 @@ impl FromStr for Decimal {
     type Err = OddError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let value = input.trim().parse().map_err(|_| OddError::InvalidOdd)?;
+        let value = input.trim().parse().map_err(|_| OddError::ParseError)?;
 
         Self::new(value)
     }
