@@ -3,6 +3,10 @@ mod rational_approximation;
 pub use rational_approximation::rational_approximation;
 
 pub fn simplify_fraction(numerator: u32, denominator: u32) -> (u32, u32) {
+    if numerator == 0 || denominator == 0 {
+        return (0, 0);
+    }
+
     let gcd = gcd(numerator, denominator);
     let numerator = numerator / gcd;
     let denominator = denominator / gcd;

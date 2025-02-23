@@ -8,8 +8,11 @@ use super::{AnyOdd, Decimal, Moneyline, Odd, OddConversion, OddError};
 
 /// A fractional odd.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Display)]
-#[display("{_0}/{_1}")]
-pub struct Fractional(NonZeroU32, NonZeroU32);
+#[display("{numerator}/{denominator}")]
+pub struct Fractional {
+    numerator: NonZeroU32,
+    denominator: NonZeroU32,
+}
 
 impl Fractional {
     /// Create a new fractional odd.
@@ -18,7 +21,20 @@ impl Fractional {
         let numerator = numerator.try_into().map_err(|_| OddError::InvalidOdd)?;
         let denominator = denominator.try_into().map_err(|_| OddError::InvalidOdd)?;
 
-        Ok(Self(numerator, denominator))
+        Ok(Self {
+            numerator,
+            denominator,
+        })
+    }
+
+    /// Get the numerator of the fractional odd.
+    pub fn numerator(&self) -> u32 {
+        self.numerator.get()
+    }
+
+    /// Get the denominator of the fractional odd.
+    pub fn denominator(&self) -> u32 {
+        self.denominator.get()
     }
 }
 
@@ -57,14 +73,14 @@ impl OddConversion<Fractional> for Fractional {
 
 impl OddConversion<Decimal> for Fractional {
     fn convert(&self) -> Result<Decimal, OddError> {
-        Decimal::new(1.0 + (self.0.get() as f64 / self.1.get() as f64))
+        Decimal::new(1.0 + (self.numerator.get() as f64 / self.denominator.get() as f64))
     }
 }
 
 impl OddConversion<Moneyline> for Fractional {
     fn convert(&self) -> Result<Moneyline, OddError> {
-        let numerator = self.0.get() as f64;
-        let denominator = self.1.get() as f64;
+        let numerator = self.numerator.get() as f64;
+        let denominator = self.denominator.get() as f64;
 
         let result = if numerator >= denominator {
             numerator / denominator * 100.0
@@ -73,5 +89,28 @@ impl OddConversion<Moneyline> for Fractional {
         };
 
         Moneyline::new(result.round() as i64)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test_case::test_case;
+
+    #[test_case((1, 2), (1, 2))]
+    #[test_case((2, 4), (1, 2))]
+    #[test_case((124, 56), (31, 14))]
+    fn valid(value: (u32, u32), expected: (u32, u32)) {
+        let fractional = Fractional::new(value.0, value.1).unwrap();
+        assert_eq!(fractional.numerator(), expected.0);
+        assert_eq!(fractional.denominator(), expected.1);
+    }
+
+    #[test_case((0, 1))]
+    #[test_case((1, 0))]
+    #[test_case((0, 0))]
+    fn invalid(value: (u32, u32)) {
+        let fractional = Fractional::new(value.0, value.1);
+        assert!(fractional.is_err());
     }
 }

@@ -6,8 +6,10 @@ use super::{AnyOdd, Fractional, Moneyline, Odd, OddConversion, OddError};
 
 /// A decimal odd.
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Display)]
-#[display("{_0}")]
-pub struct Decimal(f64);
+#[display("{value}")]
+pub struct Decimal {
+    value: f64,
+}
 
 impl Decimal {
     /// Create a new decimal odd.
@@ -16,7 +18,12 @@ impl Decimal {
             return Err(OddError::InvalidOdd);
         }
 
-        Ok(Self(value))
+        Ok(Self { value })
+    }
+
+    /// Get the value of the decimal odd.
+    pub fn value(&self) -> f64 {
+        self.value
     }
 }
 
@@ -43,7 +50,7 @@ impl OddConversion<Decimal> for Decimal {
 
 impl OddConversion<Fractional> for Decimal {
     fn convert(&self) -> Result<Fractional, OddError> {
-        let (numerator, denominator) = math::rational_approximation(self.0 - 1.0);
+        let (numerator, denominator) = math::rational_approximation(self.value - 1.0);
 
         if numerator <= 0 || denominator <= 0 {
             return Err(OddError::InvalidOdd);
@@ -55,12 +62,34 @@ impl OddConversion<Fractional> for Decimal {
 
 impl OddConversion<Moneyline> for Decimal {
     fn convert(&self) -> Result<Moneyline, OddError> {
-        let result = if self.0 >= 2.0 {
-            (self.0 - 1.0) * 100.0
+        let result = if self.value >= 2.0 {
+            (self.value - 1.0) * 100.0
         } else {
-            -100.0 / (self.0 - 1.0)
+            -100.0 / (self.value - 1.0)
         };
 
         Moneyline::new(result.round() as i64)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test_case::test_case;
+
+    #[test_case(1.5, 1.5)]
+    #[test_case(3.0, 3.0)]
+    #[test_case(1.7777777777777777, 1.7777777777777777)]
+    fn valid(value: f64, expected: f64) {
+        let decimal = Decimal::new(value).unwrap();
+        assert_eq!(decimal.value(), expected);
+    }
+
+    #[test_case(0.5)]
+    #[test_case(0.0)]
+    #[test_case(-1.0)]
+    fn invalid(value: f64) {
+        let decimal = Decimal::new(value);
+        assert!(decimal.is_err());
     }
 }
