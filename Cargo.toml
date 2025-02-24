@@ -2,6 +2,10 @@
 name = "wager"
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
+description = "Primitive types and functionality for betting odds"
+repository = "https://github.com/nficca/wager"
+readme = "README.md"
 
 [dependencies]
 derive_more = { version = "2.0.1", features = ["display"] }
