@@ -11,6 +11,7 @@ use super::{AnyOdd, Fractional, Moneyline, Odd, OddError};
 ///
 /// E.g. 1.5 means that for every unit staked, the bettor will profit 1.5 units.
 #[derive(Debug, Clone, Copy, Display, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[display("{value}")]
 pub struct Decimal {
     value: f64,

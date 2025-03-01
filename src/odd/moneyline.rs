@@ -13,6 +13,7 @@ use super::{AnyOdd, Decimal, Fractional, Odd, OddError};
 /// +200 means that for every 100 units staked, the bettor will profit 200 units, while
 /// -200 means that for every 200 units staked, the bettor will profit 100 units.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Display)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[display("{}{}", if value > &0i64 { "+" } else { "-" }, value.abs())]
 pub struct Moneyline {
     value: i64,

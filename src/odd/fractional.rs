@@ -13,6 +13,7 @@ use super::{AnyOdd, Decimal, Moneyline, Odd, OddError};
 ///
 /// E.g. 4/1 means that for every unit staked, the bettor will profit 4 units.
 #[derive(Debug, Clone, Copy, Display)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[display("{numerator}/{denominator}")]
 pub struct Fractional {
     numerator: NonZeroU32,
