@@ -1,5 +1,8 @@
 # wager
 
+[![Crates.io Version](https://img.shields.io/crates/v/wager)](https://crates.io/crates/wager)
+[![docs.rs](https://img.shields.io/docsrs/wager)](https://docs.rs/wager)
+
 A library for the representation and manipulation of betting odds. Supports the parsing, converting, comparing, and calculating the payouts of various types of odds.
 
 ## Basic usage
